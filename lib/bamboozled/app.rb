@@ -10,11 +10,13 @@ module Bamboozled
   class App < Sinatra::Base
 
     set :views, File.expand_path("../templates", __FILE__)
+    set :static, true
+    set :public_folder, 'public'
 
     helpers do
 
       def browse_url(key)
-        ["http:/", params[:server], "browse", key].join("/")
+        ["http:/", params[:server] + '/bamboo', "browse", key].join("/")
       end
 
       def summary_url(key)
@@ -32,8 +34,8 @@ module Bamboozled
       erb :"index.txt"
     end
 
-    get "/:server/cc.xml" do
-      @server = params[:server]
+    get "/:server/bamboo/cc.xml" do
+      @server = params[:server] + '/bamboo'
       @build_info = begin
         load_plans(@server, request.query_string)
       end
@@ -42,7 +44,7 @@ module Bamboozled
     end
 
     get "/:server/plans/:plan" do
-      @server = params[:server]
+      @server = params[:server] + '/bamboo'
       @plan = params[:plan]
       url = "#{@server}/rest/api/latest/result/#{@plan}.json?includeAllStates=true&expand=results[0:4].result.stages"
       @results = BuildResultsParser.parse(RestClient.get(url))
